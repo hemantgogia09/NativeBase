@@ -1,12 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import React, { Component } from 'react';
-import {
-  Keyboard,
-  Platform,
-  Animated,
-  ViewPropTypes,
-  PanResponder
-} from 'react-native';
+import { Keyboard, Platform, Animated, PanResponder } from 'react-native';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 import { connectStyle } from 'native-base-shoutem-theme';
 
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
