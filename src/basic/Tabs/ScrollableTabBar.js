@@ -5,6 +5,7 @@ import { isEqual } from 'lodash';
 import { connectStyle, StyleProvider } from 'native-base-shoutem-theme';
 import mapPropsToStyleNames from '../../utils/mapPropsToStyleNames';
 import variable from './../../theme/variables/platform';
+import ThemeContext from '../../theme/ThemeContext';
 import { TabHeading } from '../TabHeading';
 import { Text } from '../Text';
 import { TabContainer } from '../TabContainer';
@@ -44,9 +45,6 @@ const ScrollableTabBar = createReactClass({
       style: PropTypes.any,
     }),
     onScroll: PropTypes.func
-  },
-  contextTypes: {
-    theme: PropTypes.object
   },
 
   getDefaultProps() {
@@ -221,8 +219,18 @@ const ScrollableTabBar = createReactClass({
   },
 
   render() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // We need to use the ThemeContext.Consumer within the render method
+    return (
+      <ThemeContext.Consumer>
+        {theme => this.renderContent(theme)}
+      </ThemeContext.Consumer>
+    );
+  },
+
+  renderContent(theme) {
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
     const tabUnderlineStyle = {
       position: 'absolute',

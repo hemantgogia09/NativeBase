@@ -9,10 +9,12 @@ import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 import getStyle from '../utils/getStyle';
 import variable from '../theme/variables/platform';
 
+// Import ThemeContext from your theme provider
+// If you don't have a separate file for this context, you can create it here:
+import ThemeContext from '../theme/ThemeContext';
+
 class Header extends Component {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext; // Using the static contextType for class components
 
   render() {
     const {
@@ -23,8 +25,12 @@ class Header extends Component {
       translucent
     } = this.props;
 
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
 
     const platformStyle = variables.platformStyle;
@@ -58,6 +64,16 @@ class Header extends Component {
   }
 }
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const HeaderWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Header {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
 Header.propTypes = {
   ...ViewPropTypes,
   style: PropTypes.oneOfType([
@@ -69,9 +85,13 @@ Header.propTypes = {
   rounded: PropTypes.bool
 };
 
+// Apply the propTypes to the wrapper component
+HeaderWithModernContext.propTypes = Header.propTypes;
+
 const StyledHeader = connectStyle(
   'NativeBase.Header',
   {},
   mapPropsToStyleNames
-)(Header);
+)(HeaderWithModernContext);
+
 export { StyledHeader as Header };

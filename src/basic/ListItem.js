@@ -10,14 +10,17 @@ import { connectStyle } from 'native-base-shoutem-theme';
 
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 import variable from '../theme/variables/platform';
+import ThemeContext from '../theme/ThemeContext';
 
 class ListItem extends Component {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
   render() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
 
     if (
@@ -73,10 +76,23 @@ ListItem.propTypes = {
   button: PropTypes.bool
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const ListItemWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <ListItem {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+ListItemWithModernContext.propTypes = ListItem.propTypes;
+
 const StyledListItem = connectStyle(
   'NativeBase.ListItem',
   {},
   mapPropsToStyleNames
-)(ListItem);
+)(ListItemWithModernContext);
 
 export { StyledListItem as ListItem };

@@ -6,6 +6,7 @@ import { connectStyle } from 'native-base-shoutem-theme';
 import variable from '../../theme/variables/platform';
 import mapPropsToStyleNames from '../../utils/mapPropsToStyleNames';
 import { IconNB } from '../IconNB';
+import ThemeContext from '../../theme/ThemeContext';
 
 import ic from './NBIcons.json';
 
@@ -14,17 +15,19 @@ const IS_IOS = Platform.OS === 'ios';
 
 
 class Icon extends React.PureComponent {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
 
   setRoot(c){
     this._root = c;
   }
 
   getName() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
     const platformStyle = variables.platformStyle;
 
@@ -105,8 +108,21 @@ Icon.propTypes = {
   type: PropTypes.string
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const IconWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Icon {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+IconWithModernContext.propTypes = Icon.propTypes;
+
 const StyledIcon = connectStyle('NativeBase.Icon', {}, mapPropsToStyleNames)(
-  Icon
+  IconWithModernContext
 );
 
 export { StyledIcon as Icon };

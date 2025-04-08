@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connectStyle } from 'native-base-shoutem-theme';
 import { get } from 'lodash';
+import ThemeContext from '../theme/ThemeContext';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -24,9 +25,7 @@ import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 const Icomoon = createIconSetFromIcoMoon(icoMoonConfig);
 
 class IconNB extends React.PureComponent {
-  static contextTypes = {
-    theme: PropTypes.object,
-  };
+  static contextType = ThemeContext;
 
   constructor(props) {
     super(props);
@@ -45,10 +44,14 @@ class IconNB extends React.PureComponent {
   }
 
   setIcon(iconType) {
-    if (iconType === undefined && get(this, 'context.theme')) {
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    if (iconType === undefined && theme) {
       // eslint-disable-next-line
-      iconType = this.context.theme['@@shoutem.theme/themeStyle'].variables
-        .iconFamily;
+      iconType = theme['@@shoutem.theme/themeStyle']
+        ? theme['@@shoutem.theme/themeStyle'].variables.iconFamily
+        : 'Ionicons';
     }
     switch (iconType) {
       case 'AntDesign':
@@ -126,10 +129,23 @@ IconNB.propTypes = {
   ]),
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const IconNBWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <IconNB {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+IconNBWithModernContext.propTypes = IconNB.propTypes;
+
 const StyledIconNB = connectStyle(
   'NativeBase.IconNB',
   {},
   mapPropsToStyleNames
-)(IconNB);
+)(IconNBWithModernContext);
 
 export { StyledIconNB as IconNB };

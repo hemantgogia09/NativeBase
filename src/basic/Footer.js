@@ -5,11 +5,10 @@ import { connectStyle } from 'native-base-shoutem-theme';
 
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 import getStyle from '../utils/getStyle';
+import ThemeContext from '../theme/ThemeContext';
 
 class Footer extends Component {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
 
   render() {
     const { style } = this.props;
@@ -35,9 +34,22 @@ Footer.propTypes = {
   ])
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const FooterWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Footer {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+FooterWithModernContext.propTypes = Footer.propTypes;
+
 const StyledFooter = connectStyle(
   'NativeBase.Footer',
   {},
   mapPropsToStyleNames
-)(Footer);
+)(FooterWithModernContext);
 export { StyledFooter as Footer };

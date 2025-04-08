@@ -13,14 +13,13 @@ import { connectStyle } from 'native-base-shoutem-theme';
 import variable from '../theme/variables/platform';
 import { PLATFORM } from '../theme/variables/commonColor';
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
+import ThemeContext from '../theme/ThemeContext';
 
 import { Text } from './Text';
 
 
 class Button extends React.PureComponent {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
 
   setRoot(c){
     this._root = c;
@@ -52,8 +51,12 @@ class Button extends React.PureComponent {
   }
 
   render() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
 
     const children =
@@ -182,9 +185,22 @@ const styles = StyleSheet.create({
   }
 });
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const ButtonWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Button {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+ButtonWithModernContext.propTypes = Button.propTypes;
+
 const StyledButton = connectStyle(
   'NativeBase.Button',
   {},
   mapPropsToStyleNames
-)(Button);
+)(ButtonWithModernContext);
 export { StyledButton as Button };

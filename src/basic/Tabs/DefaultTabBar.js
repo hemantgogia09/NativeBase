@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { connectStyle, StyleProvider } from 'native-base-shoutem-theme';
 import mapPropsToStyleNames from '../../utils/mapPropsToStyleNames';
 import variable from './../../theme/variables/platform';
+import ThemeContext from '../../theme/ThemeContext';
 import { TabHeading } from '../TabHeading';
 import { Text } from '../Text';
 import { TabContainer } from '../TabContainer';
@@ -34,9 +35,6 @@ const DefaultTabBar = createReactClass({
     }),
     accessible: PropTypes.array,
     accessibilityLabel: PropTypes.array
-  },
-  contextTypes: {
-    theme: PropTypes.object
   },
 
   getDefaultProps() {
@@ -132,8 +130,18 @@ const DefaultTabBar = createReactClass({
   },
 
   render() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // We need to use the ThemeContext.Consumer within the render method
+    return (
+      <ThemeContext.Consumer>
+        {theme => this.renderContent(theme)}
+      </ThemeContext.Consumer>
+    );
+  },
+
+  renderContent(theme) {
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
     const platformStyle = variables.platformStyle;
     const containerWidth = this.props.containerWidth;
@@ -150,6 +158,7 @@ const DefaultTabBar = createReactClass({
       inputRange: [0, 1],
       outputRange: [0, containerWidth / numberOfTabs]
     });
+    
     return (
       <TabContainer
         style={[

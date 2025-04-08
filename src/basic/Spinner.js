@@ -5,14 +5,17 @@ import { connectStyle } from 'native-base-shoutem-theme';
 
 import variable from '../theme/variables/platform';
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
+import ThemeContext from '../theme/ThemeContext';
 
 class Spinner extends Component {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
   render() {
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
     return (
       <ActivityIndicator
@@ -37,10 +40,23 @@ Spinner.propTypes = {
   inverse: PropTypes.bool
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const SpinnerWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Spinner {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+SpinnerWithModernContext.propTypes = Spinner.propTypes;
+
 const StyledSpinner = connectStyle(
   'NativeBase.Spinner',
   {},
   mapPropsToStyleNames
-)(Spinner);
+)(SpinnerWithModernContext);
 
 export { StyledSpinner as Spinner };

@@ -1,5 +1,6 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import ThemeContext from '../../theme/ThemeContext';
 
 export default class NativeBaseComponent extends Component {
   static propTypes = {
@@ -7,23 +8,22 @@ export default class NativeBaseComponent extends Component {
     theme: PropTypes.object
   };
 
-  static contextTypes = {
-    theme: PropTypes.object,
-    foregroundColor: PropTypes.string
-  };
+  static contextType = ThemeContext;
 
-  static childContextTypes = {
-    theme: PropTypes.object,
-    foregroundColor: PropTypes.string
-  };
-
-  getChildContext() {
-    return {
-      theme: this.props.theme ? this.props.theme : this.context.theme
-    };
-  }
+  // Note: getChildContext and childContextTypes are deprecated in React 16.3+
+  // Components using this base class should now use ThemeContext.Provider instead
 
   getContextForegroundColor() {
-    return this.context.foregroundColor;
+    // Access foregroundColor from the modern context if available
+    const theme = this.context;
+    if (theme && theme.foregroundColor) {
+      return theme.foregroundColor;
+    }
+    return null;
+  }
+
+  // Helper method to get the theme from either props or context
+  getTheme() {
+    return this.props.theme || this.context;
   }
 }

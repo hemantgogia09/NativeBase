@@ -8,11 +8,10 @@ import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 import variable from '../theme/variables/platform';
 import { PLATFORM } from '../theme/variables/commonColor';
 import computeProps from '../utils/computeProps';
+import ThemeContext from '../theme/ThemeContext';
 
 class CheckBox extends Component {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
 
   getInitialStyle(variables) {
     const { color, checked, checkboxType, borderColor } = this.props;
@@ -48,8 +47,12 @@ class CheckBox extends Component {
   }
   render() {
     const { checked, tickColor } = this.props;
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
     const platformStyle = variables.platformStyle;
     const platform = variables.platform;
@@ -91,10 +94,23 @@ CheckBox.propTypes = {
   onPress: PropTypes.func
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const CheckBoxWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <CheckBox {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+CheckBoxWithModernContext.propTypes = CheckBox.propTypes;
+
 const StyledCheckBox = connectStyle(
   'NativeBase.CheckBox',
   {},
   mapPropsToStyleNames
-)(CheckBox);
+)(CheckBoxWithModernContext);
 
 export { StyledCheckBox as CheckBox };

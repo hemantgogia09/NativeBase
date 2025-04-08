@@ -7,11 +7,10 @@ import { KeyboardAwareScrollView } from '@codler/react-native-keyboard-aware-scr
 import variable from '../theme/variables/platform';
 import mapPropsToStyleNames from '../utils/mapPropsToStyleNames';
 import getStyle from '../utils/getStyle';
+import ThemeContext from '../theme/ThemeContext';
 
 class Content extends PureComponent {
-  static contextTypes = {
-    theme: PropTypes.object
-  };
+  static contextType = ThemeContext;
 
   render() {
     const {
@@ -28,8 +27,12 @@ class Content extends PureComponent {
       backgroundColor: getStyle(style).backgroundColor
     };
 
-    const variables = this.context.theme
-      ? this.context.theme['@@shoutem.theme/themeStyle'].variables
+    // Get theme from the modern context
+    const theme = this.context;
+    
+    // Access variables using the new context pattern
+    const variables = theme && theme['@@shoutem.theme/themeStyle']
+      ? theme['@@shoutem.theme/themeStyle'].variables
       : variable;
 
     return (
@@ -66,10 +69,23 @@ Content.propTypes = {
   ])
 };
 
+// Create a functional component wrapper to use with connectStyle
+// This is to ensure compatibility with the new context API
+const ContentWithModernContext = (props) => {
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => <Content {...props} />}
+    </ThemeContext.Consumer>
+  );
+};
+
+// Apply the propTypes to the wrapper component
+ContentWithModernContext.propTypes = Content.propTypes;
+
 const StyledContent = connectStyle(
   'NativeBase.Content',
   {},
   mapPropsToStyleNames
-)(Content);
+)(ContentWithModernContext);
 
 export { StyledContent as Content };
